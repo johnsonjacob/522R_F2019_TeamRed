@@ -1,0 +1,31 @@
+<html>
+    <head>
+      <title>Team Red Interface</title>
+    </head>
+    <body>
+      <img src="{{ url_for('video_feed') }}">
+      <form action="{{url_for('global_cmd')}}" method="POST">
+        <input type="submit" name="run_cmd" value="Start"/>
+        <input type="submit" name="run_cmd" value="Stop"/>
+        
+      </form>
+      <form action="{{url_for('feed_select')}}" method="POST">
+        <input type="submit" name="feed_cmd" value="Off"/>        
+        <input type="submit" name="feed_cmd" value="Normal"/>
+        <input type="submit" name="feed_cmd" value="Yellow"/>
+        <input type="submit" name="feed_cmd" value="White"/>
+        <input type="submit" name="feed_cmd" value="Transform"/>
+        <input type="submit" name="feed_cmd" value="Depth"/>
+        <input type="submit" name="feed_cmd" value="Annotated"/>
+      </form>
+      <form action="{{url_for('destination')}}" method="POST">
+        <input type="text" name="coordinates"/>
+        <input type="submit" name="dst_cmd" value="Set Destination"/>
+        <input type="submit" name="dst_cmd" value="Clear Destination"/>
+      </form>
+      <form action="{{url_for('speed')}}" method="POST">
+        <input type="text" name="speed"/>
+        <input type="submit" name="speed_cmd" value="Set Speed"/>
+      </form>
+    </body>
+  </html>
