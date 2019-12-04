@@ -23,6 +23,7 @@ import time
 from translate import Translate
 from turns import *
 from scipy.spatial import distance
+from gps import GPS 
 
 #import darknet as dn
 
@@ -77,7 +78,7 @@ class StopLightDetector:
         global annotated_boxes
         global stop_at_light
 
-        addr = 'http://192.168.1.28:5000/'
+        addr = 'http://192.168.1.24:5000/'
         #addr = 'http://192.168.1.26:5000/'
         # prepare headers for http request
         content_type = 'image/jpeg'
@@ -293,10 +294,11 @@ class Server:
 
 class Self_Drive:
 
-    def __init__(self, speed=0.15, lane_offset=150, wait_period=10):
+    def __init__(self, speed=0.15, lane_offset=150, wait_period=10, hard_coded_turns=True):
+        self.hard_coded_turns = hard_coded_turns
         self.speed = speed
         self.pid = SteeringPid(lane_offset, kp=0.1, ki=0.006, kd=1.2)
-        self.intersections_pid = SteeringPid(0, kp=0.1, ki=0.006, kd=1.2)
+        self.intersections_pid = SteeringPid(1, kp=0.1, ki=0.006, kd=1.2)
         self.current_turn = None
         self.current_turn_direction = None
         self.handling_intersection = False
@@ -395,21 +397,26 @@ class Self_Drive:
                 
                 depth_image = np.asanyarray(depth_frame.get_data())
                 #print(depth_image[220][200:400])
-                
-                num = 0
-                for i in range(200,400):
-                    if depth_image[220][i] < 600 and depth_image[220][i] > 0:
-                        num += 1
-                if num >= 20:
-                    obstacle = True
-                else:
-                    obstacle = False
+               
 
                 depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_HSV)
     
                 offset, image, white, yellow  = self.detector.offset_detect(frame)
 
                 self.angle = self.pid.run_pid(offset)
+                start = int(200 + 3 * self.angle)
+                end = int(400 + 3 * self.angle)
+
+                cv2.rectangle(depth_colormap, (start,210), (end,230), (255,0,0), 5)
+                num = 0
+                for i in range(start,end):
+                    #for j in range(210,230):
+                    if depth_image[220][i] < 600 and depth_image[220][i] > 0:
+                        num += 1
+                if num >= 20:
+                    obstacle = True
+                else:
+                    obstacle = False
                 #print(run, obstacle, stop_at_light, dst, api_speed)
                 if run and not obstacle and not stop_at_light:
                     if dst != (None,None):
@@ -434,37 +441,70 @@ class Self_Drive:
     def _find_closest(self, point, turn, direction):
         distance_values = distance.cdist([point], TURNS[turn][direction])
         closest_index = distance_values.argmin()
+    
+        if closest_index != len(distance_values)-1:
+            closest_index = closest_index + 1
         # print(distance_values[0][closest_index])
         return TURNS[turn][direction][closest_index]
 
     def _handle_intersection(self):
         intersection, turn = self.intersections.get_intersection()
 
-        if self.handling_intersection:
+        if self.handling_intersection and not self.hard_coded_turns:
             cur_pos, old_pos = GPS.get_gps_all()
             des_pos = self._find_closest(cur_pos, self.current_turn, self.current_turn_direction)
-            angle = Translate.get_angle(cur_pos, old_pos, des_pos)
+            angle, _ = Translate.get_angle(cur_pos, old_pos, des_pos)
 
             # should break us out of the intersection handling mode.
             # this checks to see if the point we are closest to is the last point in the intersection
-            if des_point == TURNS[self.current_turn][self.current_turn_direction][-1]:
+            if des_pos == TURNS[self.current_turn][self.current_turn_direction][-1]:
                 self.handling_intersection = False
 
-            self.angle = angle 
+            self.angle = angle/2 
             # self.angle = self.intersections_pid.run_pid(angle)
+
+
+            print("Cur Pos: {}, Old Pos: {}, Des Pos; {}".format(cur_pos, old_pos, des_pos))
+            print("Turn angle: {}".format(self.angle))
 
         elif intersection:
             self.handling_intersection = True
             self.current_turn = turn
 
-            if self.current_turn is in ["2", "3", "4", "5"]:
+            if self.current_turn in ["2", "3", "4", "5"]:
                 self.current_turn_direction = self.waypoint.get_turn()
-            elif self.current_turn is in ["0", "7"]:
+            elif self.current_turn in ["0", "7"]:
                 self.current_turn_direction = "LEFT" 
-            elif self.current_turn is in ["1", "6"]:
+                self.car.stop()
+                time.sleep(1)
+            elif self.current_turn in ["1", "6"]:
                 self.current_turn_direction = "RIGHT"
+                self.car.stop()
+                time.sleep(1)
+
+            print("Turning {} at {}".format(self.current_turn_direction, self.current_turn))
+
+            if self.hard_coded_turns:
+                self.handling_intersection = False
+                if self.current_turn in ["2", "3", "4", "5"]: #at the four way, tune seperately
+
+                    if self.current_turn_direction == "RIGHT":
+                        self.car.right(wait=0.0+.9, duration=2.5, angle=30, speed=(self.speed + 0.3))
+
+                    elif self.current_turn_direction == "LEFT":
+                        self.car.left(wait=0+1, duration=1.8, angle=-20, speed=(self.speed+ 0.3))
+
+                    elif self.current_turn_direction == "STRAIGHT":
+                        self.car.straight(wait=0+.75,duration=1.5, angle=5, speed=(self.speed + 0.3))
+
+                elif self.current_turn_direction == "RIGHT":
+                    self.car.right(wait=0.0+.1, duration=1.6, angle=30, speed=(self.speed + 0.3))
+
+                elif self.current_turn_direction == "LEFT":
+                    self.car.left(wait=0.1+1, duration=2, angle=-20, speed=(self.speed+ 0.3))
 
         
+
 
     def _handle_intersection_old(self):
         is_intersection, action, coor = self.intersections.get_intersection()
@@ -510,8 +550,35 @@ class Self_Drive:
 
 
 
+if __name__ == "__main__":
 
 
+    reset = 0
+    global run
+    global feed
+    global api_speed
+    global run_yolo_bool
+    global stop_at_light
+    stop_at_light = False
+    run_yolo_bool = False
+    car = Self_Drive(hard_coded_turns=True)
+    interface = Server()
+    stop_light = StopLightDetector()
+    run = 1
+    feed = 6
+    api_speed = 0.36
+    dst = (0,0)
+
+    t1 = threading.Thread(target=interface.start_api_server, name = "t1")
+    t2 = threading.Thread(target=stop_light.run_yolo, name = "t2")
+    t3 = threading.Thread(target=car.self_drive, name = "t3")
+
+    t3.start()
+    time.sleep(1)
+    t1.start()
+    t2.start()
+
+'''
 if __name__ == "__main__":
     global run
     global feed
@@ -536,5 +603,5 @@ if __name__ == "__main__":
     time.sleep(5)
     t1.start()
     t2.start()
-    
+ '''
 

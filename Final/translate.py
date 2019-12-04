@@ -20,8 +20,6 @@ class Translate:
         else:
             theta = math.atan((cur_y-old_y)/(cur_x-old_x)) 
 
-        print(np.degrees(theta))
-
 
         translate_m = np.array([
             [1, 0, -cur_x], 

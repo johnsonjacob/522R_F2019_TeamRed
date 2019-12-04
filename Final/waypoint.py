@@ -6,6 +6,7 @@ class Waypoint:
 
     IMAGE_HALF_HEIGHT = 741
     IMAGE_HALF_WIDTH = 474
+    TURN_ORDER = ["STRAIGHT", "RIGHT", "LEFT"]
 
     def __init__(self, box_width=20, box_height=20):
         self.box_width = box_width
@@ -13,6 +14,7 @@ class Waypoint:
         self.cv = Circular_Value()
         self.destination = None
         self.destination_quad = None 
+        self.index = len(self.TURN_ORDER) - 1
 
 
     def arrived(self):
@@ -25,6 +27,15 @@ class Waypoint:
         return False 
 
     def get_turn(self):
+        if self.index >= len(self.TURN_ORDER)-1:
+            self.index = 0
+        else:
+            self.index = self.index + 1
+        
+        return self.TURN_ORDER[self.index]
+
+
+    def get_turn_old(self):
         if self.destination is None:
             raise Exception("Destination Point not set") 
         
