@@ -53,16 +53,21 @@ class GPS:
     @staticmethod
     def _update_gps(url, mutex, latitude, longitude, old_latitude, old_longitude):
         while True:
-            sleep(.25)
+            sleep(.15)
             try:
                 with mutex:
-                    old_latitude.value = latitude.value
-                    old_longitude.value = longitude.value
+
                     r = requests.get(url = url)
                     coorString = r.text
                     coordinates = coorString.split()
                     latitude.value = float(coordinates[0])
                     longitude.value = float(coordinates[1])
+
+                    if old_latitude.value != latitude.value:
+                        old_latitude.value = latitude.value
+                    
+                    if old_longitude.value != longitude.value:
+                        old_longitude.value = longitude.value
 
                     # # For Testing
                     # latitude.value = latitude.value + 10

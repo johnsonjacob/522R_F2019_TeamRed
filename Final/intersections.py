@@ -14,17 +14,27 @@ class Intersections:
     #     ([(730, 1560),(680,1510)], "LEFT")  # intersection 7 origin coordinates
     # )
 
-    INTERSECTIONS = (
-        ((350, 27), "LEFT"),   # intersection 0 origin coordinates
-        ((227, 202), "RIGHT"),   # intersection 1 origin coordinates
-        ((326, 654), "FOUR_WAY"),  # intersection 2 origin coordinates
-        ((570, 597), "FOUR_WAY"),  # intersection 3 origin coordinates
-        ((367, 902), "FOUR_WAY"),  # intersection 4 origin coordinates
-        ((622, 856), "FOUR_WAY"),  # intersection 5 origin coordinates
-        ((829, 1367), "RIGHT"), # intersection 6 origin coordinates
-        ((724, 1534), "LEFT")  # intersection 7 origin coordinates
-    )
+    # INTERSECTIONS = (
+    #     ((350, 27), "LEFT"),   # intersection 0 origin coordinates
+    #     ((227, 202), "RIGHT"),   # intersection 1 origin coordinates
+    #     ((326, 654), "FOUR_WAY"),  # intersection 2 origin coordinates
+    #     ((570, 597), "FOUR_WAY"),  # intersection 3 origin coordinates
+    #     ((367, 902), "FOUR_WAY"),  # intersection 4 origin coordinates
+    #     ((622, 856), "FOUR_WAY"),  # intersection 5 origin coordinates
+    #     ((829, 1367), "RIGHT"), # intersection 6 origin coordinates
+    #     ((724, 1534), "LEFT")  # intersection 7 origin coordinates
+    # )
 
+    INTERSECTIONS = (
+        ((350, 27), "0"),   # intersection 0 origin coordinates
+        ((227, 202), "1"),  # intersection 1 origin coordinates
+        ((326, 654), "2"),  # intersection 2 origin coordinates
+        ((570, 597), "3"),  # intersection 3 origin coordinates
+        ((367, 902), "4"),  # intersection 4 origin coordinates
+        ((622, 856), "5"),  # intersection 5 origin coordinates
+        ((829, 1367), "6"), # intersection 6 origin coordinates
+        ((724, 1534), "7")  # intersection 7 origin coordinates
+    )
 
     def __init__(self, color="Red", wait_period=10, intersections=None, box_width=75, box_height=75):
         self.color = color
@@ -77,6 +87,19 @@ class Intersections:
     #         return False
 
     def get_intersection(self):
+        #TODO: figure out ending condition
+        coor, old_coor = GPS.get_gps_all(color=self.color)
+        for origin, turn in self.intersections:
+            if self._within_box(origin, coor):
+                if time.time() < self.wait_period + self.time_stamp:
+                    return False, None
+                else:
+                    self.time_stamp = time.time()
+                    return True, turn
+        return False, None
+
+    
+    def get_intersection_old(self):
         coor = GPS.get_gps(color=self.color)
         for origin, action in self.intersections:
             if self._within_box(origin, coor):
@@ -86,6 +109,8 @@ class Intersections:
                     self.time_stamp = time.time()
                     return True, action, coor
         return False, "No Intersection", coor
+
+
 
 if __name__ == "__main__":
     intersections = Intersections()
