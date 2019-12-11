@@ -89,21 +89,21 @@ class Image_Process:
         # white_mask = cv2.inRange(HSV_image, lower_white, upper_white)
         white_mask = cv2.inRange(image_GRAY, 155, 255)
 
-        white_shape = white_mask.shape
-        lower_left = [0, white_shape[0]]
-        lower_right = [white_shape[1], white_shape[0]]
-        top_left = [0, white_shape[0] / 5]
-        top_right = [white_shape[1], white_shape[0] / 5]
-        vertices = [np.array([lower_left, top_left, top_right, lower_right], dtype=np.int32)]
-        white_mask = self._region_of_interest(white_mask, vertices)
+        #white_shape = white_mask.shape
+        #lower_left = [0, white_shape[0]]
+        #lower_right = [white_shape[1], white_shape[0]]
+        #top_left = [0, white_shape[0] / 5]
+        #top_right = [white_shape[1], white_shape[0] / 5]
+        #vertices = [np.array([lower_left, top_left, top_right, lower_right], dtype=np.int32)]
+        #white_mask = self._region_of_interest(white_mask, vertices)
 
-        yellow_shape = yellow_mask.shape
-        lower_left = [yellow_shape[1] / 9, yellow_shape[0]]
-        lower_right = [yellow_shape[1] - yellow_shape[1] / 9, yellow_shape[0]]
-        top_left = [yellow_shape[1] / 9, yellow_shape[0] / 3]
-        top_right = [yellow_shape[1] - yellow_shape[1] / 9, yellow_shape[0] / 3]
-        vertices = [np.array([lower_left, top_left, top_right, lower_right], dtype=np.int32)]
-        yellow_mask = self._region_of_interest(yellow_mask, vertices)
+        #yellow_shape = yellow_mask.shape
+        #lower_left = [yellow_shape[1] / 9, yellow_shape[0]]
+        #lower_right = [yellow_shape[1] - yellow_shape[1] / 9, yellow_shape[0]]
+        #top_left = [yellow_shape[1] / 9, yellow_shape[0] / 3]
+        #top_right = [yellow_shape[1] - yellow_shape[1] / 9, yellow_shape[0] / 3]
+        #vertices = [np.array([lower_left, top_left, top_right, lower_right], dtype=np.int32)]
+        #yellow_mask = self._region_of_interest(yellow_mask, vertices)
 
         #white_mask = self.remove_horizontal(white_mask)
         #white_mask = self.remove_horizontal(white_mask)

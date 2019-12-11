@@ -6,7 +6,8 @@ class Waypoint:
 
     IMAGE_HALF_HEIGHT = 741
     IMAGE_HALF_WIDTH = 474
-    TURN_ORDER = ["STRAIGHT", "RIGHT", "LEFT"]
+    #TURN_ORDER = ["LEFT", "RIGHT", "STRAIGHT", "STRAIGHT"]
+    TURN_ORDER = ["RIGHT", "LEFT"]
 
     def __init__(self, box_width=20, box_height=20):
         self.box_width = box_width

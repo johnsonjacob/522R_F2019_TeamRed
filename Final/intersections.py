@@ -17,7 +17,7 @@ class Intersections:
     # INTERSECTIONS = (
     #     ((350, 27), "LEFT"),   # intersection 0 origin coordinates
     #     ((227, 202), "RIGHT"),   # intersection 1 origin coordinates
-    #     ((326, 654), "FOUR_WAY"),  # intersection 2 origin coordinates
+    #     ((326, 654), "FOUR_WA Y"),  # intersection 2 origin coordinates
     #     ((570, 597), "FOUR_WAY"),  # intersection 3 origin coordinates
     #     ((367, 902), "FOUR_WAY"),  # intersection 4 origin coordinates
     #     ((622, 856), "FOUR_WAY"),  # intersection 5 origin coordinates
@@ -27,8 +27,8 @@ class Intersections:
 
     INTERSECTIONS = (
         ((350, 27), "0"),   # intersection 0 origin coordinates
-        ((227, 202), "1"),  # intersection 1 origin coordinates
-        ((326, 654), "2"),  # intersection 2 origin coordinates
+        ((231, 195), "1"),  # intersection 1 origin coordinates
+        ((297, 627), "2"),  # intersection 2 origin coordinates
         ((570, 597), "3"),  # intersection 3 origin coordinates
         ((367, 902), "4"),  # intersection 4 origin coordinates
         ((622, 856), "5"),  # intersection 5 origin coordinates
@@ -47,7 +47,7 @@ class Intersections:
         else:
             self.intersections = intersections
 
-    def _within_box(self, origin, coor):
+    def _within_box(self, origin, coor, w=85, h=85):
 
         x_origin = origin[0]
         y_origin = origin[1]
@@ -57,7 +57,7 @@ class Intersections:
         x_dif = abs(x_origin-x)
         y_dif = abs(y_origin-y)
         # print("x:{}, y:{}, x_origin:{}, y_origin:{}, width:{}, height:{}".format(x, y, x_origin, y_origin, width, height))
-        if x_dif <  self.box_width/2 and y_dif < self.box_height/2:
+        if x_dif <  w/2 and y_dif < h/2:
             return True
         else:
             return False
@@ -87,7 +87,6 @@ class Intersections:
     #         return False
 
     def get_intersection(self):
-        #TODO: figure out ending condition
         coor, old_coor = GPS.get_gps_all(color=self.color)
         for origin, turn in self.intersections:
             if self._within_box(origin, coor):
